@@ -20,12 +20,13 @@ object HTTPService extends Http4sDsl[IO] {
   def service(databaseAccess: StockDAO) = HttpService[IO] {
 
     case GET -> Root / "stock" =>
-      val stockResult = for {
-        stock <- EitherT(databaseAccess.currentStock)
-        validatedStock <- EitherT(IO(Stock.validate(stock)))
-      } yield validatedStock
 
-      stockResult.value.flatMap {
+      val stockResult = databaseAccess.currentStock.map(stockOrError => //work on the value inside the IO
+        //flatMap either values (stock or 2 possible error types: NonReachableStock and EmptyStock)
+        stockOrError.flatMap(Stock.validate)
+      )
+
+      stockResult.flatMap {
         case Right(stock) => Ok(Json.obj("stock" -> Json.fromInt(stock.value)))
         case Left(stockError: StockError) => Conflict(Json.obj("stock" -> Json.fromString(stockError.getMessage)))
       }
