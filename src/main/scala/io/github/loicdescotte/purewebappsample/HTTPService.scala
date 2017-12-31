@@ -34,7 +34,7 @@ object HTTPService extends Http4sDsl[IO] {
 
 }
 
-//StreamApp will handle IO unsafe calls (i.e. all the side effects) and threading
+//StreamApp will execute IO unsafe calls (i.e. all the side effects) and manage threading
 object Server extends StreamApp[IO] {
   override def stream(args: List[String], requestShutdown: IO[Unit]) = {
 
