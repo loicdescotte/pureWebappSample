@@ -1,6 +1,6 @@
 Simple http4s + Doobie + Cats Effect (IO monad) + Circe POC to show how to build a purely functional web application in Scala (only pure functions, no mutable state).
 
-This is just an example to show how to retrieve a stock value in a database, validate this value ( > 0) and return a result as json.
+This is just an example to show how to retrieve and update a stock value in a database, validate this value ( > 0) and return a result as json.
 
 Pure functions make no side effect and always give the same output for the same input.  
   
@@ -21,6 +21,6 @@ Test part is done using Specs2.
 How to run the sample : 
 
  * sbt run
- * open http://localhost:8080/stock
+ * open http://localhost:8080/stock/1
 
 For a more advanced example, see https://github.com/pauljamescleary/scala-pet-store
