@@ -3,7 +3,7 @@ package io.github.loicdescotte.purewebappsample
 import cats.implicits._
 import cats.effect.{ExitCode, IO, IOApp}
 import doobie.util.transactor.Transactor
-import io.circe._
+import io.circe._, io.circe.generic.auto._, io.circe.syntax._
 import io.github.loicdescotte.purewebappsample.dao.StockDAO
 import io.github.loicdescotte.purewebappsample.model.{Stock, StockError}
 import org.http4s._
@@ -21,39 +21,40 @@ case class HTTPService(databaseAccess: StockDAO) extends Http4sDsl[IO] {
 
     case GET -> Root / "stock" / IntVar(stockId) =>
 
-      val stockResult = databaseAccess.currentStock(stockId).map(stockOrError => //work on the value inside the IO
+      // retrieve stock in database
+      val stockDbResult = databaseAccess.currentStock(stockId).map(stockOrError => //work on the value inside the IO
         //flatMap either values (stock or 2 possible error types: NonReachableStock and EmptyStock)
         stockOrError.flatMap(Stock.validate)
       )
 
-      stockResult.flatMap {
-        case Right(stock) => Ok(Json.obj("stock" -> Json.fromInt(stock.value)))
-        case Left(stockError: StockError) => Conflict(Json.obj("stock" -> Json.fromString(stockError.getMessage)))
-      }
+      // transform to HTTP response
+      stockDbResult.flatMap(s => stockOrErrorResponse(s))
 
     case PUT -> Root / "stock" / IntVar(stockId) / IntVar(updateValue) =>
 
-      val stockResult: IO[Either[StockError, Stock]] = databaseAccess.updateStock(stockId, updateValue) *> databaseAccess.currentStock(stockId)
+      val stockDbResult: IO[Either[StockError, Stock]] = databaseAccess.updateStock(stockId, updateValue)
 
-      stockResult.flatMap {
-        case Right(stock) => Ok(Json.obj("stock" -> Json.fromInt(stock.value)))
-        case Left(stockError: StockError) => Conflict(Json.obj("stock" -> Json.fromString(stockError.getMessage)))
-      }
-
+      stockDbResult.flatMap(s => stockOrErrorResponse(s))
   }
 
+  private def stockOrErrorResponse[A: Encoder](entity: Either[StockError, A]): IO[Response[IO]] = {
+    entity match {
+      case Right(e) => Ok(e.asJson)
+      case Left(stockError: StockError) => Conflict(Json.obj("Error" -> Json.fromString(stockError.getMessage)))
+    }
+  }
 }
 
 //IOApp will execute IO unsafe calls (i.e. all the side effects) and manage threading
 object Server extends IOApp {
 
-  override def run(args: List[String]): IO[ExitCode] = {
-    val xa = Transactor.fromDriverManager[IO](
-      "org.h2.Driver",
-      "jdbc:h2:mem:poc;INIT=RUNSCRIPT FROM 'src/main/resources/sql/create.sql'"
-      , "sa", ""
-    )
+  val xa = Transactor.fromDriverManager[IO](
+    "org.h2.Driver",
+    "jdbc:h2:mem:poc;INIT=RUNSCRIPT FROM 'src/main/resources/sql/create.sql'"
+    , "sa", ""
+  )
 
+  override def run(args: List[String]): IO[ExitCode] = {
     //Start the server
     val databaseAccess = new StockDAO(xa)
     BlazeServerBuilder[IO]

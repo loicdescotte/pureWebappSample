@@ -2,6 +2,7 @@ val Http4sVersion = "0.20.0-RC1"
 val Specs2Version = "4.0.0"
 val H2Version = "1.4.196"
 val doobieVersion = "0.6.0"
+val circeVersion = "0.10.0"
 val ScalaMockVersion = "4.0.0"
 
 lazy val root = (project in file("."))
@@ -15,6 +16,7 @@ lazy val root = (project in file("."))
       "org.http4s" %% "http4s-circe" % Http4sVersion,
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
       "org.tpolecat" %% "doobie-core" % doobieVersion,
+      "io.circe" %% "circe-generic" % circeVersion,
       "com.h2database" % "h2" % H2Version,
       "org.slf4j" % "slf4j-simple" % "1.7.26",
       "org.specs2" %% "specs2-core" % Specs2Version % Test,
