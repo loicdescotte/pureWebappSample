@@ -3,7 +3,7 @@ package io.github.loicdescotte.purewebappsample.dao
 import cats.effect.IO
 import doobie.implicits._
 import io.github.loicdescotte.purewebappsample.IOTransactor
-import io.github.loicdescotte.purewebappsample.model.{StockDBAccessError, Stock, StockError}
+import io.github.loicdescotte.purewebappsample.model.{Stock, StockDBAccessError}
 
 
 /**
@@ -35,7 +35,7 @@ class StockDAO(val xa: IOTransactor) {
   private def withStockErrorManagement[A](stockDatabaseResult: Either[Throwable, A]): Either[StockDBAccessError, A] = {
     stockDatabaseResult.fold(
       // if left, use typed errors
-      throwable => Left(StockDBAccessError(throwable.getMessage)),
+      throwable => Left(StockDBAccessError(throwable)),
       // else there is nothing to do
       Right(_)
     )

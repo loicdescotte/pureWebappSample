@@ -2,9 +2,9 @@ package io.github.loicdescotte.purewebappsample.model
 
 case class Stock(id:Int, value: Int)
 
-sealed abstract class StockError(message: String) extends Exception(message)
-case object EmptyStock extends StockError("Stock is empty")
-case class StockDBAccessError(message: String) extends StockError(message)
+sealed abstract class StockError(cause: Throwable) extends Exception(cause)
+case object EmptyStock extends StockError(new Exception("Stock is empty"))
+case class StockDBAccessError(cause: Throwable) extends StockError(cause)
 
 /**
   * Stock business logic
