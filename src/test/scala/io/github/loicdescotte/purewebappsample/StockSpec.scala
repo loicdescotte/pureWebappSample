@@ -37,7 +37,7 @@ class StockSpec extends Specification {
       (databaseAccess.currentStock _).expects(1).returning(IO(Right(Stock(1, 0))))
       val stockResponse = HTTPService(databaseAccess).routes.orNotFound.run(request).unsafeRunSync
       stockResponse.status must beEqualTo(Status.Conflict)
-      stockResponse.as[String].unsafeRunSync() must beEqualTo("""{"Error":"Stock is empty"}""")
+      stockResponse.as[String].unsafeRunSync() must beEqualTo("""{"Error":"java.lang.Exception: Stock is empty"}""")
     }
   }
 }

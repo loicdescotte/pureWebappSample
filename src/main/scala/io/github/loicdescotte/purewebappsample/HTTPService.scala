@@ -11,11 +11,14 @@ import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.syntax.kleisli._
 import org.http4s.server.blaze.BlazeServerBuilder
+import org.slf4j.LoggerFactory._
 
 /**
   * HTTP routes definition
   */
 case class HTTPService(databaseAccess: StockDAO) extends Http4sDsl[IO] {
+
+  val logger = getLogger(classOf[HTTPService])
 
   val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
 
@@ -40,7 +43,9 @@ case class HTTPService(databaseAccess: StockDAO) extends Http4sDsl[IO] {
   private def stockOrErrorResponse[A: Encoder](entity: Either[StockError, A]): IO[Response[IO]] = {
     entity match {
       case Right(e) => Ok(e.asJson)
-      case Left(stockError: StockError) => Conflict(Json.obj("Error" -> Json.fromString(stockError.getMessage)))
+      case Left(stockError: StockError) =>
+        logger.error(stockError.getMessage, stockError)
+        Conflict(Json.obj("Error" -> Json.fromString(stockError.getMessage)))
     }
   }
 }
