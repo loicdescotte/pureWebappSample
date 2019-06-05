@@ -1,4 +1,4 @@
-Simple http4s + Doobie + Cats Effect (IO monad) + Circe POC to show how to build a purely functional web application in Scala (only pure functions, no mutable state).
+Simple http4s + Doobie + ZIO + Circe POC to show how to build a purely functional web application in Scala (only pure functions, no mutable state).
 
 This is just an example to show how to retrieve and update a stock value in a database, validate this value ( > 0) and return a result as json.
 

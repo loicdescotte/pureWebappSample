@@ -1,10 +1,10 @@
 package io.github.loicdescotte.purewebappsample.dao
 
-import cats.effect.IO
 import doobie.implicits._
 import io.github.loicdescotte.purewebappsample.IOTransactor
 import io.github.loicdescotte.purewebappsample.model.{Stock, StockDBAccessError}
-
+import scalaz.zio.IO
+import scalaz.zio.interop.catz._
 
 /**
   * The methods in this class are pure functions
@@ -15,29 +15,18 @@ import io.github.loicdescotte.purewebappsample.model.{Stock, StockDBAccessError}
   */
 class StockDAO(val xa: IOTransactor) {
 
-  def currentStock(stockId: Int): IO[Either[StockDBAccessError, Stock]] = {
-    val stockDatabaseResult = sql"""
+  def currentStock(stockId: Int): IO[StockDBAccessError, Stock] = {
+    sql"""
       SELECT * FROM stock where id=$stockId
-     """.query[Stock].unique.transact(xa).attempt
-
-    stockDatabaseResult.map(withStockErrorManagement)
+     """.query[Stock].unique.transact(xa).mapError(StockDBAccessError)
   }
 
-  def updateStock(stockId: Int, updateValue: Int): IO[Either[StockDBAccessError, Stock]] = {
+  def updateStock(stockId: Int, updateValue: Int): IO[StockDBAccessError, Stock] = {
     val newStockDatabaseResult = for {
       _ <- sql""" UPDATE stock SET value = value + $updateValue where id=$stockId""".update.run
       newStock <- sql"""SELECT * FROM stock where id=$stockId""".query[Stock].unique
     } yield newStock
 
-    newStockDatabaseResult.transact(xa).attempt.map(withStockErrorManagement)
-  }
-
-  private def withStockErrorManagement[A](stockDatabaseResult: Either[Throwable, A]): Either[StockDBAccessError, A] = {
-    stockDatabaseResult.fold(
-      // if left, use typed errors
-      throwable => Left(StockDBAccessError(throwable)),
-      // else there is nothing to do
-      Right(_)
-    )
+    newStockDatabaseResult.transact(xa).mapError(StockDBAccessError)
   }
 }

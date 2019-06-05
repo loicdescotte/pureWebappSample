@@ -1,9 +1,14 @@
 package io.github.loicdescotte.purewebappsample
 
 import cats.implicits._
-import cats.effect.{ExitCode, IO, IOApp}
+import scalaz.zio.console.putStrLn
+import scalaz.zio.{App, IO, Task, ZIO}
+import scalaz.zio.interop.catz._
+import scalaz.zio.interop.catz.implicits._
 import doobie.util.transactor.Transactor
-import io.circe._, io.circe.generic.auto._, io.circe.syntax._
+import io.circe._
+import io.circe.generic.auto._
+import io.circe.syntax._
 import io.github.loicdescotte.purewebappsample.dao.StockDAO
 import io.github.loicdescotte.purewebappsample.model.{Stock, StockError}
 import org.http4s._
@@ -16,56 +21,51 @@ import org.slf4j.LoggerFactory._
 /**
   * HTTP routes definition
   */
-case class HTTPService(databaseAccess: StockDAO) extends Http4sDsl[IO] {
+case class HTTPService(databaseAccess: StockDAO) extends Http4sDsl[Task] {
 
   val logger = getLogger(classOf[HTTPService])
 
-  val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  val routes: HttpRoutes[Task] = HttpRoutes.of[Task] {
 
     case GET -> Root / "stock" / IntVar(stockId) =>
-
       // retrieve stock in database
-      val stockDbResult = databaseAccess.currentStock(stockId).map(stockOrError => //work on the value inside the IO
-        //flatMap either values (stock or 2 possible error types: NonReachableStock and EmptyStock)
-        stockOrError.flatMap(Stock.validate)
+      val stockDbResult: IO[StockError, Stock] = databaseAccess.currentStock(stockId).flatMap(stock => //work on the value inside the IO
+        IO.fromEither(Stock.validate(stock))
       )
-
-      // transform to HTTP response
-      stockDbResult.flatMap(s => stockOrErrorResponse(s))
+      stockOrErrorResponse(stockDbResult)
 
     case PUT -> Root / "stock" / IntVar(stockId) / IntVar(updateValue) =>
-
-      val stockDbResult: IO[Either[StockError, Stock]] = databaseAccess.updateStock(stockId, updateValue)
-
-      stockDbResult.flatMap(s => stockOrErrorResponse(s))
+      stockOrErrorResponse(databaseAccess.updateStock(stockId, updateValue))
   }
 
-  private def stockOrErrorResponse[A: Encoder](entity: Either[StockError, A]): IO[Response[IO]] = {
-    entity match {
-      case Right(e) => Ok(e.asJson)
-      case Left(stockError: StockError) =>
-        logger.error(stockError.getMessage, stockError)
+  def stockOrErrorResponse(stockResponse: IO[StockError, Stock]): Task[Response[Task]] = {
+    stockResponse.foldM(
+      stockError => {
+        IO(logger.error(stockError.getMessage, stockError))
         Conflict(Json.obj("Error" -> Json.fromString(stockError.getMessage)))
-    }
+      },
+      stock => Ok(stock.asJson))
   }
+
 }
 
-//IOApp will execute IO unsafe calls (i.e. all the side effects) and manage threading
-object Server extends IOApp {
+//Zio App will execute IO unsafe calls (i.e. all the side effects) and manage threading
+object Server extends App {
 
-  val xa = Transactor.fromDriverManager[IO](
+  val xa = Transactor.fromDriverManager[Task](
     "org.h2.Driver",
     "jdbc:h2:mem:poc;INIT=RUNSCRIPT FROM 'src/main/resources/sql/create.sql'"
     , "sa", ""
   )
 
-  override def run(args: List[String]): IO[ExitCode] = {
+  def run(args: List[String]) = ZIO.runtime[Environment].flatMap { implicit rts =>
     //Start the server
     val databaseAccess = new StockDAO(xa)
-    BlazeServerBuilder[IO]
+    BlazeServerBuilder[Task]
       .bindHttp(8080, "0.0.0.0")
       .withHttpApp(HTTPService(databaseAccess).routes.orNotFound)
       .serve
-      .compile.drain.as(ExitCode.Success)
-  }
+      .compile.drain.as(0)
+  }.catchAll(e => putStrLn(s"Server failed with '$e'") *> ZIO.succeed(1))
+
 }
