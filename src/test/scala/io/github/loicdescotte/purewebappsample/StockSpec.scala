@@ -34,7 +34,7 @@ class StockSpec extends Specification with MockContext {
       testRuntime.unsafeRun(stockResponse.as[String]) must beEqualTo("""{"id":1,"value":10}""")
     }
 
-    "return 200 and updated stock" in  {
+    "return 200 and updated stock" in {
       val (stockDAOMock, testRuntime) = setUpTest
       val request = Request[STask](Method.PUT, uri"""/stock/1/5""")
       (stockDAOMock.updateStock _).expects(1,5).returning(IO.fromEither(Right(Stock(1,15))))
@@ -44,7 +44,7 @@ class StockSpec extends Specification with MockContext {
       testRuntime.unsafeRun(stockResponse.as[String]) must beEqualTo("""{"id":1,"value":15}""")
     }
 
-    "return error" in new MockContext {
+    "return error" in {
       val (stockDAOMock, testRuntime) = setUpTest
       val request = Request[STask](Method.GET, uri"""/stock/1""")
       (stockDAOMock.currentStock _).expects(1).returning(IO.fromEither(Right(Stock(1, 0))))
