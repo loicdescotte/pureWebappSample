@@ -14,8 +14,6 @@ Benefits of using pure functions (and isolating effects in an IO monad)  :
  * You can control precisely where/when effects occur
  * For optimization, results of pure functions can be memoized
 
-I recommend watching [this talk from Daniel Spiewak](https://www.youtube.com/watch?v=g_jP47HFpWA) to learn more about benefits of the IO monad.
-
 Test part is done using Specs2.
 
 How to run the sample : 
