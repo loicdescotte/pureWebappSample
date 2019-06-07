@@ -13,8 +13,6 @@ import scalaz.zio.{IO, Runtime}
 
 class StockSpec extends Specification with MockContext {
 
-  //TODO add property testing on stock update
-
   def setUpTest = {
 
     val stockDAOMock = mock[StockDAO]
@@ -39,7 +37,6 @@ class StockSpec extends Specification with MockContext {
     "return 200 and updated stock" in  {
       val (stockDAOMock, testRuntime) = setUpTest
       val request = Request[STask](Method.PUT, uri"""/stock/1/5""")
-      //val stockDAOMock = mock[StockDAOLive]
       (stockDAOMock.updateStock _).expects(1,5).returning(IO.fromEither(Right(Stock(1,15))))
       (stockDAOMock.currentStock _).expects(1).returning(IO.fromEither(Right(Stock(1,5))))
       val stockResponse = testRuntime.unsafeRun(HTTPService.routes.orNotFound.run(request))
@@ -50,8 +47,6 @@ class StockSpec extends Specification with MockContext {
     "return error" in new MockContext {
       val (stockDAOMock, testRuntime) = setUpTest
       val request = Request[STask](Method.GET, uri"""/stock/1""")
-      //val stockDAOMock = mock[StockDAOLive]
-      //set stock to zero
       (stockDAOMock.currentStock _).expects(1).returning(IO.fromEither(Right(Stock(1, 0))))
       val stockResponse = testRuntime.unsafeRun(HTTPService.routes.orNotFound.run(request))
       stockResponse.status must beEqualTo(Status.Conflict)
