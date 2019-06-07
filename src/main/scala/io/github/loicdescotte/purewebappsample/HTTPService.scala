@@ -1,6 +1,5 @@
 package io.github.loicdescotte.purewebappsample
 
-import doobie.util.transactor.Transactor
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
@@ -13,7 +12,7 @@ import org.http4s.syntax.kleisli._
 import org.slf4j.LoggerFactory._
 import scalaz.zio.internal.PlatformLive
 import scalaz.zio.interop.catz._
-import scalaz.zio.{IO, Runtime, Task, TaskR, ZIO}
+import scalaz.zio.{IO, Runtime, TaskR, ZIO}
 
 /**
   * HTTP routes definition
