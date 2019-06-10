@@ -58,7 +58,7 @@ object HTTPService extends Http4sDsl[STask] {
 object Server extends CatsApp {
 
 
-  def main: ZIO[ExtServices, Throwable, Unit] = { // liveRuntime will execute IO unsafe calls (i.e. all the side effects) and manage threading
+  val program: ZIO[ExtServices, Throwable, Unit] = { // liveRuntime will execute IO unsafe calls (i.e. all the side effects) and manage threading
     implicit val liveRuntime: Runtime[ExtServices] = Runtime(ExtServicesLive, PlatformLive.Default)
 
     //Start the server
@@ -69,7 +69,7 @@ object Server extends CatsApp {
       .compile.drain
   }
 
-  override def run(args: List[String]) = main.provide(ExtServicesLive).fold(_ => 1, _ => 0)
+  override def run(args: List[String]) = program.provide(ExtServicesLive).fold(_ => 1, _ => 0)
 }
 
 
