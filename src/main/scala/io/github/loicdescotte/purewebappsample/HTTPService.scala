@@ -57,10 +57,9 @@ object HTTPService extends Http4sDsl[STask] {
 
 object Server extends CatsApp {
 
+  implicit val liveRuntime: Runtime[ExtServices] = Runtime(ExtServicesLive, PlatformLive.Default)
 
   val program: ZIO[ExtServices, Throwable, Unit] = { // liveRuntime will execute IO unsafe calls (i.e. all the side effects) and manage threading
-    implicit val liveRuntime: Runtime[ExtServices] = Runtime(ExtServicesLive, PlatformLive.Default)
-
     //Start the server
     BlazeServerBuilder[STask]
       .bindHttp(8080, "0.0.0.0")
