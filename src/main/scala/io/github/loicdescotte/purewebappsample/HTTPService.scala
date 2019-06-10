@@ -3,7 +3,7 @@ package io.github.loicdescotte.purewebappsample
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
-import io.github.loicdescotte.purewebappsample.model.{Stock, StockError}
+import io.github.loicdescotte.purewebappsample.model.{EmptyStock, Stock, StockError}
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
@@ -41,11 +41,15 @@ object HTTPService extends Http4sDsl[STask] {
   }
 
   def stockOrErrorResponse(stockResponse: ZIO[ExtServices, StockError, Stock]): TaskR[ExtServices, Response[STask]] = {
-    stockResponse.foldM(
-      stockError => {
+    stockResponse.foldM({
+      //error cases
+      case stockError@EmptyStock => {
         IO(logger.error(stockError.getMessage, stockError))
-        Conflict(Json.obj("Error" -> Json.fromString(stockError.getMessage)))
-      },
+        Conflict(Json.obj("Error" -> Json.fromString("Stock is empty")))
+      }
+      case stockError => InternalServerError(Json.obj("Error" -> Json.fromString(stockError.getMessage)))
+    },
+      //success case
       stock => Ok(stock.asJson))
   }
 
@@ -65,7 +69,7 @@ object Server extends CatsApp {
       .compile.drain
   }
 
-  override def run(args: List[String])= main.provide(ExtServicesLive).fold(_ => 1, _ => 0)
+  override def run(args: List[String]) = main.provide(ExtServicesLive).fold(_ => 1, _ => 0)
 }
 
 

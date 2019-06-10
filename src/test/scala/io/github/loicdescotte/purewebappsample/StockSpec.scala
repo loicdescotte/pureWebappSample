@@ -50,7 +50,7 @@ class StockSpec extends Specification with MockContext {
       (stockDAOMock.currentStock _).expects(1).returning(IO.fromEither(Right(Stock(1, 0))))
       val stockResponse = testRuntime.unsafeRun(HTTPService.routes.orNotFound.run(request))
       stockResponse.status must beEqualTo(Status.Conflict)
-      testRuntime.unsafeRun(stockResponse.as[String]) must beEqualTo("""{"Error":"java.lang.Exception: Stock is empty"}""")
+      testRuntime.unsafeRun(stockResponse.as[String]) must beEqualTo("""{"Error":"Stock is empty"}""")
     }
   }
 }
