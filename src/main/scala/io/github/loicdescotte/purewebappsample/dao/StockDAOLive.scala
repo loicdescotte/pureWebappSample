@@ -23,7 +23,7 @@ class StockDAOLive(val xa: IOTransactor) extends StockDAO{
   override def currentStock(stockId: Int): IO[StockDBAccessError, Stock] = {
     sql"""
       SELECT * FROM stock where id=$stockId
-     """.query[Stock].unique.transact(xa).mapError(StockDBAccessError)
+     """.query[Stock].unique.transact(xa).mapError(t => StockDBAccessError(t.getMessage))
   }
 
   override  def updateStock(stockId: Int, updateValue: Int): IO[StockDBAccessError, Stock] = {
@@ -32,6 +32,6 @@ class StockDAOLive(val xa: IOTransactor) extends StockDAO{
       newStock <- sql"""SELECT * FROM stock where id=$stockId""".query[Stock].unique
     } yield newStock
 
-    newStockDatabaseResult.transact(xa).mapError(StockDBAccessError)
+    newStockDatabaseResult.transact(xa).mapError(t => StockDBAccessError(t.getMessage))
   }
 }

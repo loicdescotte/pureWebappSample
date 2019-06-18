@@ -43,12 +43,12 @@ object HTTPService extends Http4sDsl[STask] {
     stockResponse.foldM({
       //error cases
       case stockError@EmptyStock => {
-        IO(logger.error(stockError.getMessage, stockError))
+        IO(logger.error(stockError.message, stockError))
           .flatMap(_ => Conflict(Json.obj("Error" -> Json.fromString("Stock is empty"))))
       }
       case stockError =>
-        IO(logger.error(stockError.getMessage, stockError))
-          .flatMap(_ =>InternalServerError(Json.obj("Error" -> Json.fromString(stockError.getMessage))))
+        IO(logger.error(stockError.message, stockError))
+          .flatMap(_ => InternalServerError(Json.obj("Error" -> Json.fromString(stockError.message))))
     },
       //success case
       stock => Ok(stock.asJson))

@@ -57,10 +57,10 @@ class StockSpec extends Specification with MockContext {
     "return database error" in {
       val (stockDAOMock, testRuntime) = setUpTest
       val request = Request[STask](Method.GET, uri"""/stock/4""")
-      (stockDAOMock.currentStock _).expects(4).returning(IO.fromEither(Left(StockDBAccessError(UnexpectedEnd))))
+      (stockDAOMock.currentStock _).expects(4).returning(IO.fromEither(Left(StockDBAccessError("Empty result set"))))
       val stockResponse = testRuntime.unsafeRun(HTTPService.routes.orNotFound.run(request))
       stockResponse.status must beEqualTo(Status.InternalServerError)
-      testRuntime.unsafeRun(stockResponse.as[String]) must contain("""more rows expected""")
+      testRuntime.unsafeRun(stockResponse.as[String]) must beEqualTo("""{"Error":"Empty result set"}""")
     }
   }
 }
