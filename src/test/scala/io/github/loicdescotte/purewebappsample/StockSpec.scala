@@ -2,7 +2,7 @@ package io.github.loicdescotte.purewebappsample
 
 import doobie.util.invariant.UnexpectedEnd
 import io.github.loicdescotte.purewebappsample.dao.{StockDAO, StockDAOLive}
-import io.github.loicdescotte.purewebappsample.model.{Stock, StockDBAccessError}
+import io.github.loicdescotte.purewebappsample.model.{Stock, StockDBAccessError, StockNotFound}
 import org.http4s._
 import org.http4s.syntax.kleisli._
 import org.scalamock.specs2.MockContext
@@ -52,6 +52,15 @@ class StockSpec extends Specification with MockContext {
       val stockResponse = testRuntime.unsafeRun(HTTPService.routes.orNotFound.run(request))
       stockResponse.status must beEqualTo(Status.Conflict)
       testRuntime.unsafeRun(stockResponse.as[String]) must beEqualTo("""{"Error":"Stock is empty"}""")
+    }
+
+    "return stock not found error" in {
+      val (stockDAOMock, testRuntime) = setUpTest
+      val request = Request[STask](Method.GET, uri"""/stock/4""")
+      (stockDAOMock.currentStock _).expects(4).returning(IO.fromEither(Left(StockNotFound)))
+      val stockResponse = testRuntime.unsafeRun(HTTPService.routes.orNotFound.run(request))
+      stockResponse.status must beEqualTo(Status.NotFound)
+      testRuntime.unsafeRun(stockResponse.as[String]) must beEqualTo("""{"Error":"Stock not found"}""")
     }
 
     "return database error" in {

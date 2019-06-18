@@ -46,6 +46,10 @@ object HTTPService extends Http4sDsl[STask] {
         IO(logger.error(stockError.getMessage))
           .flatMap(_ => Conflict(Json.obj("Error" -> Json.fromString("Stock is empty"))))
       }
+      case stockError@StockNotFound => {
+        IO(logger.error(stockError.getMessage))
+          .flatMap(_ => NotFound(Json.obj("Error" -> Json.fromString("Stock not found"))))
+      }
       case stockError =>
         IO(logger.error(stockError.getMessage))
           .flatMap(_ => InternalServerError(Json.obj("Error" -> Json.fromString(stockError.getMessage))))
