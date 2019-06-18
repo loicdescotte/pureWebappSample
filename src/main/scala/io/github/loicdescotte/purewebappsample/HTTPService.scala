@@ -10,9 +10,8 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.syntax.kleisli._
 import org.slf4j.LoggerFactory._
-import scalaz.zio.internal.PlatformLive
 import scalaz.zio.interop.catz._
-import scalaz.zio.{IO, Runtime, TaskR, ZIO}
+import scalaz.zio.{IO, TaskR, ZIO}
 
 /**
   * HTTP routes definition
@@ -45,9 +44,11 @@ object HTTPService extends Http4sDsl[STask] {
       //error cases
       case stockError@EmptyStock => {
         IO(logger.error(stockError.getMessage, stockError))
-        Conflict(Json.obj("Error" -> Json.fromString("Stock is empty")))
+          .flatMap(_ => Conflict(Json.obj("Error" -> Json.fromString("Stock is empty"))))
       }
-      case stockError => InternalServerError(Json.obj("Error" -> Json.fromString(stockError.getMessage)))
+      case stockError =>
+        IO(logger.error(stockError.getMessage, stockError))
+          .flatMap(_ =>InternalServerError(Json.obj("Error" -> Json.fromString(stockError.getMessage))))
     },
       //success case
       stock => Ok(stock.asJson))
