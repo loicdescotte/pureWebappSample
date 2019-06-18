@@ -3,7 +3,7 @@ package io.github.loicdescotte.purewebappsample
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
-import io.github.loicdescotte.purewebappsample.model.{EmptyStock, Stock, StockError}
+import io.github.loicdescotte.purewebappsample.model.{EmptyStock, Stock, StockError, StockNotFound}
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
@@ -43,12 +43,12 @@ object HTTPService extends Http4sDsl[STask] {
     stockResponse.foldM({
       //error cases
       case stockError@EmptyStock => {
-        IO(logger.error(stockError.message, stockError))
+        IO(logger.error(stockError.getMessage))
           .flatMap(_ => Conflict(Json.obj("Error" -> Json.fromString("Stock is empty"))))
       }
       case stockError =>
-        IO(logger.error(stockError.message, stockError))
-          .flatMap(_ => InternalServerError(Json.obj("Error" -> Json.fromString(stockError.message))))
+        IO(logger.error(stockError.getMessage))
+          .flatMap(_ => InternalServerError(Json.obj("Error" -> Json.fromString(stockError.getMessage))))
     },
       //success case
       stock => Ok(stock.asJson))
