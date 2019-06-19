@@ -22,8 +22,7 @@ lazy val root = (project in file("."))
       "io.circe" %% "circe-generic" % circeVersion,
       "com.h2database" % "h2" % H2Version,
       "org.slf4j" % "slf4j-simple" % "1.7.26",
-      "org.specs2" %% "specs2-core" % Specs2Version % Test,
-      "org.scalamock" %% "scalamock" % ScalaMockVersion % Test,
+      "org.specs2" %% "specs2-core" % Specs2Version % Test
     )
   )
 
