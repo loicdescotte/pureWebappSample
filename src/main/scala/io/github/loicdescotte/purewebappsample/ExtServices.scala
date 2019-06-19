@@ -2,9 +2,9 @@ package io.github.loicdescotte.purewebappsample
 
 import doobie.util.transactor.Transactor
 import io.github.loicdescotte.purewebappsample.dao.{StockDAO, StockDAOLive}
-import scalaz.zio.Task
-import scalaz.zio.clock.Clock
-import scalaz.zio.interop.catz._
+import zio.Task
+import zio.clock.Clock
+import zio.interop.catz._
 
 
 /**

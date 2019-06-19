@@ -7,10 +7,10 @@ import org.http4s._
 import org.http4s.syntax.kleisli._
 import org.scalamock.specs2.MockContext
 import org.specs2.mutable.Specification
-import scalaz.zio.clock.Clock
-import scalaz.zio.internal.PlatformLive
-import scalaz.zio.interop.catz._
-import scalaz.zio.{IO, Runtime}
+import zio.clock.Clock
+import zio.internal.PlatformLive
+import zio.interop.catz._
+import zio.{IO, Runtime}
 
 class StockSpec extends Specification with MockContext {
 

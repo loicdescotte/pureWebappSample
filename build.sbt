@@ -1,10 +1,10 @@
 val Http4sVersion = "0.20.1"
 val Specs2Version = "4.0.0"
 val H2Version = "1.4.196"
-val doobieVersion = "0.6.0"
+val doobieVersion = "0.7.0"
 val circeVersion = "0.10.0"
 val ScalaMockVersion = "4.0.0"
-val ZioVersion = "1.0-RC5"
+val ZioVersion = "1.0.0-RC8-6"
 
 lazy val root = (project in file("."))
   .settings(
@@ -14,8 +14,8 @@ lazy val root = (project in file("."))
     scalaVersion := "2.12.4",
     libraryDependencies ++= Seq(
       "org.http4s" %% "http4s-blaze-server" % Http4sVersion,
-      "org.scalaz" %% "scalaz-zio" % ZioVersion,
-      "org.scalaz" %% "scalaz-zio-interop-cats" % ZioVersion,
+      "dev.zio" %% "zio" % ZioVersion,
+      "dev.zio" %% "zio-interop-cats" % ZioVersion,
       "org.http4s" %% "http4s-circe" % Http4sVersion,
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
       "org.tpolecat" %% "doobie-core" % doobieVersion,

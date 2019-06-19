@@ -3,8 +3,8 @@ package io.github.loicdescotte.purewebappsample.dao
 import doobie.implicits._
 import io.github.loicdescotte.purewebappsample.IOTransactor
 import io.github.loicdescotte.purewebappsample.model.{Stock, StockDBAccessError, StockError, StockNotFound}
-import scalaz.zio.IO
-import scalaz.zio.interop.catz._
+import zio.IO
+import zio.interop.catz._
 
 trait StockDAO {
   def currentStock(stockId: Int): IO[StockError, Stock]

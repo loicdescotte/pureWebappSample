@@ -10,8 +10,8 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.syntax.kleisli._
 import org.slf4j.LoggerFactory._
-import scalaz.zio.interop.catz._
-import scalaz.zio.{IO, TaskR, ZIO}
+import zio.interop.catz._
+import zio.{IO, TaskR, ZIO}
 
 /**
   * HTTP routes definition

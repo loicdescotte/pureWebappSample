@@ -1,7 +1,7 @@
 package io.github.loicdescotte
 
 import doobie.util.transactor.Transactor.Aux
-import scalaz.zio.{Task, TaskR, ZIO}
+import zio.{Task, TaskR, ZIO}
 
 package object purewebappsample {
 
