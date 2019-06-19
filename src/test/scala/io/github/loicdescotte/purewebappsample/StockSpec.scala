@@ -1,7 +1,7 @@
 package io.github.loicdescotte.purewebappsample
 
 import doobie.util.invariant.UnexpectedEnd
-import io.github.loicdescotte.purewebappsample.dao.{StockDAO, StockDAOLive}
+import io.github.loicdescotte.purewebappsample.dao.StockDAO
 import io.github.loicdescotte.purewebappsample.model.{Stock, StockDBAccessError, StockNotFound}
 import org.http4s._
 import org.http4s.syntax.kleisli._
@@ -66,10 +66,10 @@ class StockSpec extends Specification with MockContext {
     "return database error" in {
       val (stockDAOMock, testRuntime) = setUpTest
       val request = Request[STask](Method.GET, uri"""/stock/4""")
-      (stockDAOMock.currentStock _).expects(4).returning(IO.fromEither(Left(StockDBAccessError(UnexpectedEnd))))
+      (stockDAOMock.currentStock _).expects(4).returning(IO.fromEither(Left(StockDBAccessError(new Exception("boom!")))))
       val stockResponse = testRuntime.unsafeRun(HTTPService.routes.orNotFound.run(request))
       stockResponse.status must beEqualTo(Status.InternalServerError)
-      testRuntime.unsafeRun(stockResponse.as[String]) must contain("""more rows expected""")
+      testRuntime.unsafeRun(stockResponse.as[String]) must contain("""boom!""")
     }
   }
 }
