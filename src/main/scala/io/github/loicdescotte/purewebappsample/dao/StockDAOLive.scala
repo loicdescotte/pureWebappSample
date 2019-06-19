@@ -24,7 +24,7 @@ class StockDAOLive(val xa: IOTransactor) extends StockDAO{
     val currentStockResult: Task[Stock] = sql"""
       SELECT * FROM stock where id=$stockId
      """.query[Stock].option.transact(xa).flatMap{
-      case Some(stock) => IO.fromEither(Right(stock))
+      case Some(stock) => IO.succeed(stock)
       case None => IO.fromEither(Left(StockNotFound))
     }
 
