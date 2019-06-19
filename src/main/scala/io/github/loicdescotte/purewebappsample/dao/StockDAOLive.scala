@@ -28,7 +28,7 @@ class StockDAOLive(val xa: IOTransactor) extends StockDAO{
     stockDatabaseResult.transact(xa).mapError(StockDBAccessError)
     .flatMap{
       case Some(stock) => IO.succeed(stock)
-      case None => IO.fromEither(Left(StockNotFound))
+      case None => IO.fail(StockNotFound)
     }
   }
 

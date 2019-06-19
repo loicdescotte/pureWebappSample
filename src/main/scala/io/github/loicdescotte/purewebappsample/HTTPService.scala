@@ -42,10 +42,7 @@ object HTTPService extends Http4sDsl[STask] {
   def stockOrErrorResponse(stockResponse: ZIO[ExtServices, StockError, Stock]): TaskR[ExtServices, Response[STask]] = {
     stockResponse.foldM({
       //error cases
-      case stockError@EmptyStock => {
-        IO(logger.error(stockError.getMessage))
-          .flatMap(_ => Conflict(Json.obj("Error" -> Json.fromString("Stock is empty"))))
-      }
+      case EmptyStock =>  Conflict(Json.obj("Error" -> Json.fromString("Stock is empty")))
 
       case StockNotFound => NotFound(Json.obj("Error" -> Json.fromString("Stock not found")))
 
@@ -62,7 +59,7 @@ object HTTPService extends Http4sDsl[STask] {
 object Server extends CatsApp {
 
   //Runtime will execute IO unsafe calls (i.e. all the side effects) and manage threading
-  val program = ZIO.runtime[ExtServices].flatMap{ implicit runtime =>
+  val program = ZIO.runtime[ExtServices].flatMap { implicit runtime =>
     //Start the server
     BlazeServerBuilder[STask]
       .bindHttp(8080, "0.0.0.0")
