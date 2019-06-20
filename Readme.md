@@ -21,4 +21,3 @@ How to run the sample :
  * sbt run
  * open http://localhost:8080/stock/1
 
-For a more advanced example, see https://github.com/pauljamescleary/scala-pet-store
