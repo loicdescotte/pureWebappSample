@@ -3,6 +3,7 @@ package io.github.loicdescotte.purewebappsample
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
+import io.github.loicdescotte.purewebappsample.ExtServices.{ExtServices, StockDAO}
 import io.github.loicdescotte.purewebappsample.model.{EmptyStock, Stock, StockError, StockNotFound}
 import org.http4s._
 import org.http4s.circe._
@@ -11,17 +12,17 @@ import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.syntax.kleisli._
 import org.slf4j.LoggerFactory._
 import zio.interop.catz._
-import zio.{IO, TaskR, ZIO}
+import zio.{IO, RIO, URIO, ZIO}
 
 /**
-  * HTTP routes definition
-  */
+ * HTTP routes definition
+ */
 object HTTPService extends Http4sDsl[STask] {
 
   val logger = getLogger(this.getClass)
 
   //dependency injection
-  val stockDao = ZIO.access[ExtServices](_.stockDao)
+  val stockDao: URIO[StockDAO, StockDAO.Service] = ZIO.access[StockDAO](_.get)
 
   val routes: HttpRoutes[STask] = HttpRoutes.of[STask] {
 
@@ -39,10 +40,10 @@ object HTTPService extends Http4sDsl[STask] {
       stockOrErrorResponse(stockDao.flatMap(_.updateStock(stockId, updateValue)))
   }
 
-  def stockOrErrorResponse(stockResponse: ZIO[ExtServices, StockError, Stock]): TaskR[ExtServices, Response[STask]] = {
+  def stockOrErrorResponse(stockResponse: ZIO[ExtServices, StockError, Stock]): SResponse = {
     stockResponse.foldM({
       //error cases
-      case EmptyStock =>  Conflict(Json.obj("Error" -> Json.fromString("Stock is empty")))
+      case EmptyStock => Conflict(Json.obj("Error" -> Json.fromString("Stock is empty")))
 
       case StockNotFound => NotFound(Json.obj("Error" -> Json.fromString("Stock not found")))
 
@@ -59,7 +60,7 @@ object HTTPService extends Http4sDsl[STask] {
 object Server extends CatsApp {
 
   //Runtime will execute IO unsafe calls (i.e. all the side effects) and manage threading
-  val program = ZIO.runtime[ExtServices].flatMap { implicit runtime =>
+  val program: RIO[ExtServices, Unit] = ZIO.runtime[ExtServices].flatMap { implicit runtime =>
     //Start the server
     BlazeServerBuilder[STask]
       .bindHttp(8080, "0.0.0.0")
@@ -69,7 +70,7 @@ object Server extends CatsApp {
   }
 
   //plug the real service
-  override def run(args: List[String]) = program.provide(ExtServicesLive).fold(_ => 1, _ => 0)
+  override def run(args: List[String]) = program.provideLayer(ExtServices.extServicesLive).fold(_ => 1, _ => 0)
 }
 
 

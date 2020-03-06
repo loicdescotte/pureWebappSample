@@ -1,7 +1,9 @@
 package io.github.loicdescotte
 
 import doobie.util.transactor.Transactor.Aux
-import zio.{Task, TaskR, ZIO}
+import io.github.loicdescotte.purewebappsample.ExtServices.ExtServices
+import org.http4s.Response
+import zio.{RIO, Task, ZIO}
 
 package object purewebappsample {
 
@@ -9,6 +11,8 @@ package object purewebappsample {
 
   type SIO[E, A] = ZIO[ExtServices, E, A]
 
-  type STask[A] = TaskR[ExtServices, A]
+  type STask[A] = RIO[ExtServices, A]
+
+  type SResponse = STask[Response[STask]]
 
 }

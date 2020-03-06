@@ -1,15 +1,11 @@
 package io.github.loicdescotte.purewebappsample.dao
 
 import doobie.implicits._
-import io.github.loicdescotte.purewebappsample.IOTransactor
+import io.github.loicdescotte.purewebappsample.{ExtServices, IOTransactor}
 import io.github.loicdescotte.purewebappsample.model.{Stock, StockDBAccessError, StockError, StockNotFound}
 import zio.IO
 import zio.interop.catz._
 
-trait StockDAO {
-  def currentStock(stockId: Int): IO[StockError, Stock]
-  def updateStock(stockId: Int, updateValue: Int): IO[StockError, Stock]
-}
 
 /**
   * The methods in this class are pure functions
@@ -18,7 +14,7 @@ trait StockDAO {
   *
   * @param xa
   */
-class StockDAOLive(val xa: IOTransactor) extends StockDAO{
+class StockDAOLive(val xa: IOTransactor) extends ExtServices.StockDAO.Service {
 
   override def currentStock(stockId: Int): IO[StockError, Stock] = {
     val stockDatabaseResult = sql"""
