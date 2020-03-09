@@ -2,7 +2,6 @@ val Http4sVersion = "0.21.1"
 val H2Version = "1.4.196"
 val DoobieVersion = "0.8.8"
 val CirceVersion = "0.13.0"
-val ScalaMockVersion = "4.0.0"
 val ZioVersion = "1.0.0-RC18"
 
 organization := "io.github.loicdescotte"
