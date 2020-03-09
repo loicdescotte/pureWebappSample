@@ -19,12 +19,8 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-generic" % CirceVersion,
   "com.h2database" % "h2" % H2Version,
   "dev.zio" %% "zio-logging-slf4j" % "0.2.3",
-)
-
-//tests
-libraryDependencies ++= Seq(
-  "dev.zio" %% "zio-test" % ZioVersion % "test",
-  "dev.zio" %% "zio-test-sbt" % ZioVersion % "test",  
+  "dev.zio" %% "zio-test" % ZioVersion % Test,
+  "dev.zio" %% "zio-test-sbt" % ZioVersion % Test,
 )
 
 testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
