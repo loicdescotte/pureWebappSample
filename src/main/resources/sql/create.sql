@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS stock
     PRIMARY KEY(id)
 );
 
-REPLACE INTO stock VALUES(1, 100);
-REPLACE INTO stock VALUES(2, 50);
-REPLACE INTO stock VALUES(3, 0);
+insert into STOCK select * from (
+    select 1, 100 union
+    select 2, 50 union
+    select 3, 0
+) x where not exists(select * from STOCK);
