@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
 //tests
 libraryDependencies ++= Seq(
   "dev.zio" %% "zio-test" % ZioVersion % "test",
-  "dev.zio" %% "zio-test-sbt" % ZioVersion % "test",  
+  "dev.zio" %% "zio-test-sbt" % ZioVersion % "test",
 )
 
 testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")

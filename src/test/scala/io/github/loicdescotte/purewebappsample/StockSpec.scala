@@ -1,21 +1,21 @@
 package io.github.loicdescotte.purewebappsample
 
-/* TODO migrate to ZIO tests
-import io.github.loicdescotte.purewebappsample.dao.StockDAO
+import io.github.loicdescotte.purewebappsample.ExtServices.{ExtServices, StockDAO}
 import io.github.loicdescotte.purewebappsample.model.{Stock, StockDBAccessError, StockError, StockNotFound}
 import org.http4s._
+import org.http4s.syntax.literals._
 import org.http4s.syntax.kleisli._
-import org.specs2.mutable.Specification
 import zio.clock.Clock
-import zio.internal.PlatformLive
 import zio.interop.catz._
-import zio.{IO, Runtime}
+import zio.test.Assertion._
+import zio.test._
+import zio.{IO, ZLayer}
 
-class StockSpec extends Specification {
 
-  object ExtServicesTest extends ExtServices with Clock.Live {
-    override val stockDao: StockDAO = new StockDAO {
+class StockSpec extends DefaultRunnableSpec {
 
+  val stockDAOTest: ZLayer.NoDeps[Nothing, StockDAO] = ZLayer.succeed {
+    new StockDAO.Service {
       //you could also use a mocking framework here
       override def currentStock(stockId: Int): IO[StockError, Stock] = {
         stockId match {
@@ -31,45 +31,63 @@ class StockSpec extends Specification {
         currentStock(stockId).map(stock => stock.copy(value = stock.value + updateValue))
       }
     }
+
   }
 
-  val testRuntime = Runtime(ExtServicesTest, PlatformLive.Default)
+  val externalServicesTest = stockDAOTest ++ Clock.live
 
-  "Stock HTTP Service" should {
-    "return 200 and current stock" in {
+  def spec = suite("Stock HTTP Service") {
+
+    testM("return 200 and current stock") {
       val request = Request[STask](Method.GET, uri"""/stock/1""")
-      val stockResponse = testRuntime.unsafeRun(HTTPService.routes.orNotFound.run(request))
-      stockResponse.status must beEqualTo(Status.Ok)
-      testRuntime.unsafeRun(stockResponse.as[String]) must beEqualTo("""{"id":1,"value":10}""")
+      val response: SResponse = HTTPService.routes.orNotFound.run(request)
+      response.flatMap(r => assertM(r.as[String])(equalTo("""{"id":1,"value":10}""")))
+        .provideLayer(externalServicesTest)
     }
 
-    "return 200 and updated stock" in {
+    testM("return 200 and updated stock"){
       val request = Request[STask](Method.PUT, uri"""/stock/1/5""")
-      val stockResponse = testRuntime.unsafeRun(HTTPService.routes.orNotFound.run(request))
-      stockResponse.status must beEqualTo(Status.Ok)
-      testRuntime.unsafeRun(stockResponse.as[String]) must beEqualTo("""{"id":1,"value":15}""")
+
+      val asserts = for {
+        response <- HTTPService.routes.orNotFound.run(request)
+        a1 = assert(response.status)(equalTo(Status.Ok))
+        a2 <- assertM(response.as[String])(equalTo("""{"id":1,"value":15}"""))
+      } yield a1 && a2
+
+      asserts.provideLayer(externalServicesTest)
     }
 
-    "return empty stock error" in {
+    testM("return empty stock error"){
       val request = Request[STask](Method.GET, uri"""/stock/3""")
-      val stockResponse = testRuntime.unsafeRun(HTTPService.routes.orNotFound.run(request))
-      stockResponse.status must beEqualTo(Status.Conflict)
-      testRuntime.unsafeRun(stockResponse.as[String]) must beEqualTo("""{"Error":"Stock is empty"}""")
+      val asserts = for {
+        response <- HTTPService.routes.orNotFound.run(request)
+        a1 = assert(response.status)(equalTo(Status.Conflict))
+        a2 <- assertM(response.as[String])(equalTo("""{"Error":"Stock is empty"}"""))
+      } yield a1 && a2
+
+      asserts.provideLayer(externalServicesTest)
     }
 
-    "return stock not found error" in {
-      val request = Request[STask](Method.GET, uri"""/stock/4""")
-      val stockResponse = testRuntime.unsafeRun(HTTPService.routes.orNotFound.run(request))
-      stockResponse.status must beEqualTo(Status.NotFound)
-      testRuntime.unsafeRun(stockResponse.as[String]) must beEqualTo("""{"Error":"Stock not found"}""")
-    }
 
-    "return database error" in {
-      val request = Request[STask](Method.GET, uri"""/stock/99""")
-      val stockResponse = testRuntime.unsafeRun(HTTPService.routes.orNotFound.run(request))
-      stockResponse.status must beEqualTo(Status.InternalServerError)
-      testRuntime.unsafeRun(stockResponse.as[String]) must contain("""BOOM""")
-    }
+
   }
+
+  //
+  //  "Stock HTTP Service" should {
+  //    //
+
+  //    "return stock not found error" in {
+  //      val request = Request[STask](Method.GET, uri"""/stock/4""")
+  //      val stockResponse = testRuntime.unsafeRun(HTTPService.routes.orNotFound.run(request))
+  //      stockResponse.status must beEqualTo(Status.NotFound)
+  //      testRuntime.unsafeRun(stockResponse.as[String]) must beEqualTo("""{"Error":"Stock not found"}""")
+  //    }
+  //
+  //    "return database error" in {
+  //      val request = Request[STask](Method.GET, uri"""/stock/99""")
+  //      val stockResponse = testRuntime.unsafeRun(HTTPService.routes.orNotFound.run(request))
+  //      stockResponse.status must beEqualTo(Status.InternalServerError)
+  //      testRuntime.unsafeRun(stockResponse.as[String]) must contain("""BOOM""")
+  //    }
+  //  }
 }
-*/
