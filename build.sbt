@@ -1,8 +1,8 @@
-val Http4sVersion = "0.21.1"
+val Http4sVersion = "0.21.4"
 val H2Version = "1.4.196"
-val DoobieVersion = "0.8.8"
+val DoobieVersion = "0.9.0"
 val CirceVersion = "0.13.0"
-val ZioVersion = "1.0.0-RC18"
+val ZioVersion = "1.0.0-RC18-2"
 
 organization := "io.github.loicdescotte"
 name := "pureWebAppSample"

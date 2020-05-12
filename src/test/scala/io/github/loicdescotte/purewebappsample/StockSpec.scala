@@ -1,6 +1,6 @@
 package io.github.loicdescotte.purewebappsample
 
-import io.github.loicdescotte.purewebappsample.ExtServices.StockDAO
+import io.github.loicdescotte.purewebappsample.Dependencies.StockDAO
 import io.github.loicdescotte.purewebappsample.model.{Stock, StockDBAccessError, StockError, StockNotFound}
 import org.http4s._
 import org.http4s.syntax.literals._

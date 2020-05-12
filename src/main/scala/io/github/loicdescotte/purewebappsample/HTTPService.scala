@@ -3,7 +3,7 @@ package io.github.loicdescotte.purewebappsample
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
-import io.github.loicdescotte.purewebappsample.ExtServices.{ExtServices, StockDAO}
+import io.github.loicdescotte.purewebappsample.Dependencies.{ExtServices, StockDAO}
 import io.github.loicdescotte.purewebappsample.model.{EmptyStock, Stock, StockError, StockNotFound}
 import org.http4s._
 import org.http4s.circe._
@@ -70,7 +70,7 @@ object Server extends CatsApp {
   }
 
   //plug the real service
-  override def run(args: List[String]) = program.provideLayer(ExtServices.extServicesLive).fold(_ => 1, _ => 0)
+  override def run(args: List[String]) = program.provideLayer(Dependencies.extServicesLive).fold(_ => 1, _ => 0)
 }
 
 

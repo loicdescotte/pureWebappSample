@@ -7,7 +7,7 @@ import zio._
 import zio.clock.Clock
 import zio.interop.catz._
 
-object ExtServices {
+object Dependencies {
 
   type ExtServices = StockDAO with Clock
   type StockDAO = Has[StockDAO.Service]
@@ -20,7 +20,7 @@ object ExtServices {
       def updateStock(stockId: Int, updateValue: Int): IO[StockError, Stock]
     }
 
-    val live: ZLayer.NoDeps[Nothing, StockDAO] =
+    val live: ULayer[StockDAO] =
       ZLayer.succeed {
         val xa = Transactor.fromDriverManager[Task](
           "org.h2.Driver",
@@ -31,6 +31,6 @@ object ExtServices {
       }
   }
 
-  val extServicesLive = StockDAO.live ++ Clock.live
+  val extServicesLive: ULayer[ExtServices] = StockDAO.live ++ Clock.live
 
 }

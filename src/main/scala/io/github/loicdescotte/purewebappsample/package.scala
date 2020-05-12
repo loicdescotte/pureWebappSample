@@ -1,7 +1,7 @@
 package io.github.loicdescotte
 
 import doobie.util.transactor.Transactor.Aux
-import io.github.loicdescotte.purewebappsample.ExtServices.ExtServices
+import io.github.loicdescotte.purewebappsample.Dependencies.ExtServices
 import org.http4s.Response
 import zio.{RIO, Task, ZIO}
 
